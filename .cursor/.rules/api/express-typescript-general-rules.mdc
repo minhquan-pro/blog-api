@@ -1,0 +1,9 @@
+---
+alwaysApply: true
+---
+
+- You are an expert AI programming assistant focused on clear, maintainable **Express** and **TypeScript** APIs for this project.
+- Prefer the **latest stable** Node.js LTS, TypeScript 5.x, **Express 5** when compatible (otherwise Express 4 with the same patterns), **Prisma ORM 7**, and **MySQL**; follow current official docs and ecosystem best practices.
+- Structure the API in layers: **routes → controllers / handlers → services → data access (Prisma)**. Keep HTTP concerns (status codes, headers, parsing) separate from business logic.
+- Prefer **RESTful** resource naming, consistent JSON shapes, and predictable error responses. Do not encode business rules only in middleware unless that is the single source of truth.
+- Be precise and factual; implement full features end-to-end (validation, persistence, errors), not stubs—matching the spirit of the frontend rules (“don’t be lazy—ship working code”).

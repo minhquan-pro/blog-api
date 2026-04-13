@@ -1,0 +1,9 @@
+---
+alwaysApply: true
+---
+
+- **Database**: avoid N+1 query patterns; use Prisma `include` / `select` / batching judiciously; add indexes for real query patterns (especially filters and joins used in production). Use transactions when multiple writes must succeed or fail together.
+- **Connections**: reuse a **single PrismaClient** instance per process (module singleton); do not create clients per request. Configure MySQL pool size appropriately for deployment; close gracefully on shutdown.
+- **API surface**: paginate list endpoints; cap page size; return stable sort order. Prefer `ETag` / conditional requests only when the project already uses caching patterns.
+- **Resilience**: time out slow external calls; distinguish **client errors (4xx)** from **server errors (5xx)**; never leak stack traces or internal details in production JSON responses.
+- **Observability**: log structured messages with request correlation id when middleware exists; avoid logging secrets or full payloads containing PII.

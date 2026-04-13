@@ -1,0 +1,9 @@
+---
+alwaysApply: true
+---
+
+- Use TypeScript strictly: enable and respect `strict` compiler options; avoid `any`; use `unknown` at boundaries and narrow with type guards.
+- Prefer **interfaces** for object shapes shared across modules (DTOs, service results). Use **generics** for reusable utilities (pagination, API wrappers, repository helpers).
+- Model request and response payloads explicitly (interfaces or Zod-inferred types). Align types with Prisma-generated types where they represent the same domain concept; use **mappers** when API shape differs from DB shape.
+- For async Express handlers, use consistent error handling so rejected promises become proper HTTP errors (e.g. centralized async wrapper or framework error middleware).
+- Validate external input at the edge (body, query, params) with a schema library (e.g. Zod); do not trust raw `req.body` or stringly-typed query params.

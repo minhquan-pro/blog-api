@@ -1,0 +1,9 @@
+---
+alwaysApply: true
+---
+
+- Follow standard **JavaScript/TypeScript** naming: `camelCase` for variables, functions, and methods; `PascalCase` for classes, types, interfaces, and enums.
+- **Express routes**: use plural resource names and kebab-case path segments when needed (e.g. `/api/posts`, `/api/posts/:id`). File names: `kebab-case.ts` or match existing project convention consistently.
+- **Handlers vs routers**: name handlers `verbResource` or `handleAction` (e.g. `listPosts`, `createPost`, `getPostById`). Group related routes in routers mounted under `/api` (or version prefix `/api/v1`).
+- **Constants**: `SCREAMING_SNAKE_CASE` for true environment-level or config constants; avoid magic strings for status reasons—centralize shared literals.
+- **Prisma**: model names `PascalCase`, fields `camelCase`, table mapping via `@@map` when SQL naming differs—stay consistent with Prisma conventions.

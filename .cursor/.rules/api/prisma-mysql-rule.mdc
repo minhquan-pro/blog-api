@@ -1,0 +1,10 @@
+---
+alwaysApply: true
+---
+
+- **Stack**: Prisma ORM **7** with **MySQL** (`provider = "mysql"` in `schema.prisma`). Keep the schema as the single source of truth for models; use migrations for production (`prisma migrate`) rather than ad-hoc `db push` in deployed environments unless explicitly a prototype.
+- **Prisma 7 config**: follow official Prisma 7 guidance—**database URL and migrate-related URLs** belong in **`prisma.config.ts`** (e.g. `defineConfig` from `prisma/config`) with explicit **`dotenv`** loading; do not put `url` / `directUrl` / `shadowDatabaseUrl` in the `datasource` block of `schema.prisma` (they moved to config).
+- **Generator**: use `provider = "prisma-client"` (Prisma 7 default direction); set a **custom `output`** path for the generated client if the project standard requires it—keep imports consistent across the codebase.
+- **Runtime client**: Prisma 7 expects a **driver adapter** or **Accelerate URL** when constructing `PrismaClient`—for direct MySQL, use the **MySQL2 adapter** pattern from current docs (`mysql2` connection pool + `@prisma/adapter-mysql2`). Centralize client creation in one module (e.g. `lib/prisma.ts`) and export a singleton.
+- **MySQL specifics**: respect `utf8mb4` and sensible column types; use `@db.*` attributes when you need DB-level precision (e.g. `Decimal`, `VarChar` lengths). Be explicit about **nullable** fields vs defaults; document breaking schema changes in migration notes.
+- **Workflow**: after schema changes run **migrate** and **generate** explicitly (Prisma 7 removed several implicit side effects). Run **`prisma db seed`** manually when seeding is needed—migration no longer auto-runs seed.
