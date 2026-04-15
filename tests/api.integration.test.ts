@@ -29,6 +29,11 @@ describe.skipIf(skipIntegration)("API integration (MySQL + prisma migrate reset)
       stdio: "inherit",
       env: { ...process.env },
     });
+    const { prisma } = await import("../src/lib/prisma.js");
+    await prisma.user.update({
+      where: { id: IDS.userDemo },
+      data: { isAdmin: true },
+    });
   });
 
   afterAll(async () => {
@@ -54,6 +59,88 @@ describe.skipIf(skipIntegration)("API integration (MySQL + prisma migrate reset)
     expect(res.body.post.slug).toBe("schema-blog-medium");
   });
 
+  it("GET /api/admin/posts returns list for admin session", async () => {
+    const agent = request.agent(app);
+    await agent.post("/api/auth/login").send({
+      email: "demo@editorial.local",
+      password: "password123",
+    });
+    const res = await agent.get("/api/admin/posts");
+    expect(res.status).toBe(200);
+    expect(res.body.items).toBeDefined();
+    expect(Array.isArray(res.body.items)).toBe(true);
+    expect(res.body.items.length).toBeGreaterThanOrEqual(1);
+    expect(res.body.total).toBeGreaterThanOrEqual(1);
+    expect(res.body.items[0]).toMatchObject({
+      post: expect.objectContaining({ id: expect.any(String) }),
+      authorUsername: expect.any(String),
+      authorEmail: expect.any(String),
+    });
+  });
+
+  it("GET /api/admin/dashboard returns metrics for admin session", async () => {
+    const agent = request.agent(app);
+    await agent.post("/api/auth/login").send({
+      email: "demo@editorial.local",
+      password: "password123",
+    });
+    const res = await agent.get("/api/admin/dashboard?days=7");
+    expect(res.status).toBe(200);
+    expect(res.body.days).toBe(7);
+    expect(res.body.totals).toMatchObject({
+      users: expect.any(Number),
+      posts: expect.any(Number),
+      postsPublished: expect.any(Number),
+    });
+    expect(res.body.postsByStatus).toMatchObject({
+      draft: expect.any(Number),
+      published: expect.any(Number),
+      unlisted: expect.any(Number),
+      archived: expect.any(Number),
+    });
+    expect(Array.isArray(res.body.timeSeries)).toBe(true);
+    expect(res.body.timeSeries.length).toBe(7);
+    expect(Array.isArray(res.body.topPosts)).toBe(true);
+    expect(Array.isArray(res.body.topTags)).toBe(true);
+  });
+
+  it("admin namespace: users, tags, publications, comments, engagement", async () => {
+    const agent = request.agent(app);
+    await agent.post("/api/auth/login").send({
+      email: "demo@editorial.local",
+      password: "password123",
+    });
+
+    const users = await agent.get("/api/admin/users");
+    expect(users.status).toBe(200);
+    expect(users.body.items.length).toBeGreaterThanOrEqual(1);
+
+    const tags = await agent.get("/api/admin/tags");
+    expect(tags.status).toBe(200);
+    expect(Array.isArray(tags.body)).toBe(true);
+
+    const pubs = await agent.get("/api/admin/publications");
+    expect(pubs.status).toBe(200);
+    expect(Array.isArray(pubs.body)).toBe(true);
+
+    const comments = await agent.get("/api/admin/comments");
+    expect(comments.status).toBe(200);
+    expect(comments.body.items).toBeDefined();
+
+    const claps = await agent.get("/api/admin/post-claps");
+    expect(claps.status).toBe(200);
+    expect(claps.body.items).toBeDefined();
+
+    const bookmarks = await agent.get("/api/admin/bookmarks");
+    expect(bookmarks.status).toBe(200);
+
+    const follows = await agent.get("/api/admin/user-follows");
+    expect(follows.status).toBe(200);
+
+    const notifs = await agent.get("/api/admin/notifications");
+    expect(notifs.status).toBe(200);
+  });
+
   it("POST /api/auth/login rejects wrong password", async () => {
     const res = await request(app).post("/api/auth/login").send({
       email: "demo@editorial.local",
@@ -74,8 +161,16 @@ describe.skipIf(skipIntegration)("API integration (MySQL + prisma migrate reset)
     expect(me.status).toBe(200);
     expect(me.body.user.id).toBe(IDS.userDemo);
 
-    const clap = await agent.put(`/api/posts/${IDS.post1}/clap`).send({ count: 5 });
-    expect(clap.status).toBe(200);
+    const patchProfile = await agent.patch("/api/me/profile").send({
+      displayName: "Demo User",
+      bio: "Bio from integration test",
+    });
+    expect(patchProfile.status).toBe(200);
+    expect(patchProfile.body.displayName).toBe("Demo User");
+    expect(patchProfile.body.bio).toBe("Bio from integration test");
+
+    const like = await agent.put(`/api/posts/${IDS.post1}/like`).send({ liked: true });
+    expect(like.status).toBe(200);
 
     const bm = await agent.post(`/api/posts/${IDS.post1}/bookmark`).send();
     expect(bm.status).toBe(200);
@@ -105,6 +200,13 @@ describe.skipIf(skipIntegration)("API integration (MySQL + prisma migrate reset)
 
     const n = await agent.get("/api/me/notifications");
     expect(n.status).toBe(200);
+
+    const arch = await agent.patch(`/api/posts/${IDS.post1}/status`).send({ status: "archived" });
+    expect(arch.status).toBe(200);
+    expect(arch.body.status).toBe("archived");
+    const pub = await agent.patch(`/api/posts/${IDS.post1}/status`).send({ status: "published" });
+    expect(pub.status).toBe(200);
+    expect(pub.body.status).toBe("published");
   });
 
   it("POST /api/auth/register duplicate email", async () => {
@@ -117,7 +219,7 @@ describe.skipIf(skipIntegration)("API integration (MySQL + prisma migrate reset)
     expect(res.status).toBe(409);
   });
 
-  it("POST /api/posts creates draft", async () => {
+  it("POST /api/posts rejects new draft (local-only drafts)", async () => {
     const agent = request.agent(app);
     await agent.post("/api/auth/login").send({
       email: "demo@editorial.local",
@@ -133,6 +235,6 @@ describe.skipIf(skipIntegration)("API integration (MySQL + prisma migrate reset)
       status: "draft",
       publicationId: null,
     });
-    expect(res.status).toBe(201);
+    expect(res.status).toBe(400);
   });
 });
