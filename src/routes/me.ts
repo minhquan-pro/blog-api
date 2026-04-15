@@ -1,57 +1,56 @@
 import { Router } from "express";
 
-import { prisma } from "../lib/prisma.js";
+import {
+  getMyBookmarks,
+  getMyDrafts,
+  getMyNotifications,
+  getMyPosts,
+  patchMyProfile,
+} from "../controllers/me.controller.js";
 import { asyncHandler } from "../lib/async-handler.js";
-import { mapNotification, mapPost } from "../lib/mappers.js";
 import { optionalAuth, requireAuth } from "../middleware/auth.js";
+import { requireNotLocked } from "../middleware/require-unlocked.js";
 
 const router = Router();
+
+router.get(
+  "/posts",
+  optionalAuth,
+  requireAuth,
+  requireNotLocked,
+  asyncHandler(getMyPosts),
+);
 
 router.get(
   "/drafts",
   optionalAuth,
   requireAuth,
-  asyncHandler(async (req, res) => {
-    const uid = req.user!.userId;
-    const rows = await prisma.post.findMany({
-      where: { authorId: uid, status: "draft", deletedAt: null },
-      include: { tags: true },
-      orderBy: { updatedAt: "desc" },
-    });
-    res.json(rows.map(mapPost));
-  }),
+  requireNotLocked,
+  asyncHandler(getMyDrafts),
 );
 
 router.get(
   "/bookmarks",
   optionalAuth,
   requireAuth,
-  asyncHandler(async (req, res) => {
-    const uid = req.user!.userId;
-    const marks = await prisma.bookmark.findMany({
-      where: { userId: uid },
-      include: {
-        post: { include: { tags: true } },
-      },
-      orderBy: { createdAt: "desc" },
-    });
-    const posts = marks.map((m) => m.post).filter((p) => p.deletedAt == null);
-    res.json(posts.map(mapPost));
-  }),
+  requireNotLocked,
+  asyncHandler(getMyBookmarks),
 );
 
 router.get(
   "/notifications",
   optionalAuth,
   requireAuth,
-  asyncHandler(async (req, res) => {
-    const uid = req.user!.userId;
-    const rows = await prisma.notification.findMany({
-      where: { userId: uid },
-      orderBy: { createdAt: "desc" },
-    });
-    res.json(rows.map(mapNotification));
-  }),
+  requireNotLocked,
+  asyncHandler(getMyNotifications),
+);
+
+router.patch(
+  "/profile",
+  optionalAuth,
+  requireAuth,
+  requireNotLocked,
+  asyncHandler(patchMyProfile),
 );
 
 export { router as meRouter };
