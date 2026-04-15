@@ -8,10 +8,18 @@ export function toIso(d: Date | null | undefined): string | null {
   return d.toISOString();
 }
 
-export function mapUser(u: { id: string; email: string; createdAt: Date }): User {
+export function mapUser(u: {
+  id: string;
+  email: string;
+  isAdmin: boolean;
+  isLocked: boolean;
+  createdAt: Date;
+}): User {
   return {
     id: u.id,
     email: u.email,
+    isAdmin: u.isAdmin,
+    isLocked: u.isLocked,
     createdAt: u.createdAt.toISOString(),
   };
 }
@@ -50,7 +58,7 @@ export function mapPost(row: PostWithTags): Post {
     status: row.status,
     publishedAt: toIso(row.publishedAt),
     readingTimeMinutes: row.readingTimeMinutes,
-    clapCount: row.clapCount,
+    likeCount: row.clapCount,
     responseCount: row.responseCount,
     deletedAt: toIso(row.deletedAt),
     createdAt: row.createdAt.toISOString(),
