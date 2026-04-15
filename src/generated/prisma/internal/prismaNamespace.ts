@@ -1250,6 +1250,8 @@ export const UserScalarFieldEnum = {
   id: 'id',
   email: 'email',
   passwordHash: 'passwordHash',
+  isAdmin: 'isAdmin',
+  isLocked: 'isLocked',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -1550,6 +1552,13 @@ export type NotificationOrderByRelevanceFieldEnum = (typeof NotificationOrderByR
  * Reference to a field of type 'String'
  */
 export type StringFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'String'>
+    
+
+
+/**
+ * Reference to a field of type 'Boolean'
+ */
+export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
     
 
 

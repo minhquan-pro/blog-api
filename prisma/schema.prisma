@@ -24,6 +24,10 @@ model User {
   id           String   @id @default(uuid())
   email        String   @unique
   passwordHash String?  @map("password_hash")
+  /// Trong MySQL lưu 0/1 — có thể sửa trực tiếp trong DB (1 = quản trị)
+  isAdmin      Boolean  @default(false) @map("is_admin")
+  /// Khóa tài khoản: không xóa dữ liệu; bài viết công khai không hiển thị
+  isLocked     Boolean  @default(false) @map("is_locked")
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
