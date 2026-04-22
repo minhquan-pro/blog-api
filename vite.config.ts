@@ -1,6 +1,10 @@
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
+  server: {
+    port: 4000,
+  },
+
   test: {
     globals: true,
     environment: "node",

@@ -26,13 +26,15 @@ export function createApp(): express.Application {
   app.use(express.json({ limit: "1mb" }));
   app.use(cookieParser());
 
-  /** Luôn cho phép hai app Vite local; thêm domain từ CLIENT_ORIGIN (không bị ghi đè). */
+  /** Luôn cho phép app Vite local; Docker dùng 3000/3001. Thêm domain từ CLIENT_ORIGIN. */
   const fromEnv = (process.env.CLIENT_ORIGIN ?? "")
     .split(",")
     .map((s) => s.trim())
     .filter(Boolean);
   const originList = [
     ...new Set([
+      "http://localhost:3000",
+      "http://localhost:3001",
       "http://localhost:5173",
       "http://localhost:5174",
       ...fromEnv,

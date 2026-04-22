@@ -40,7 +40,8 @@ const editorSchema = z
     if (!has) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "Bài viết cần có ít nhất tiêu đề, nội dung, phụ đề hoặc tóm tắt.",
+        message:
+          "Bài viết cần có ít nhất tiêu đề, nội dung, phụ đề hoặc tóm tắt.",
         path: ["body"],
       });
     }
@@ -141,13 +142,15 @@ export const getById = asyncHandler(async (req: Request, res: Response) => {
   res.json(result);
 });
 
-export const patchPostStatus = asyncHandler(async (req: Request, res: Response) => {
-  const { postId } = req.params;
-  const userId = req.user!.userId;
-  const { status } = quickStatusSchema.parse(req.body);
-  const post = await updatePostStatusOnly(postId, userId, status);
-  res.json(post);
-});
+export const patchPostStatus = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { postId } = req.params;
+    const userId = req.user!.userId;
+    const { status } = quickStatusSchema.parse(req.body);
+    const post = await updatePostStatusOnly(postId, userId, status);
+    res.json(post);
+  },
+);
 
 export const patchPost = asyncHandler(async (req: Request, res: Response) => {
   const { postId } = req.params;
@@ -197,9 +200,11 @@ export const putLike = asyncHandler(async (req: Request, res: Response) => {
   res.json(post);
 });
 
-export const postBookmark = asyncHandler(async (req: Request, res: Response) => {
-  const { postId } = req.params;
-  const userId = req.user!.userId;
-  const result = await toggleBookmark(postId, userId);
-  res.json(result);
-});
+export const postBookmark = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { postId } = req.params;
+    const userId = req.user!.userId;
+    const result = await toggleBookmark(postId, userId);
+    res.json(result);
+  },
+);
