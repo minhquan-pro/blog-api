@@ -10,8 +10,9 @@ COPY package*.json ./
 
 COPY prisma ./prisma/
 
-# 4. Cài đặt các dependencies
+# 4. Cài đặt các dependencies 
 RUN npm install
+
 
 # 6. Mở cổng mà ứng dụng sẽ chạy (ví dụ: 4000)
 EXPOSE 4000
